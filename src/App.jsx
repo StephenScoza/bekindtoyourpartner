@@ -1,0 +1,275 @@
+import { useEffect, useState } from 'react';
+import CategoryFilter from './components/CategoryFilter';
+import History from './components/History';
+import Onboarding from './components/Onboarding';
+import PromptCard from './components/PromptCard';
+import Settings from './components/Settings';
+import Stats from './components/Stats';
+import { categories, prompts } from './data/prompts';
+import {
+  clearAppStorage,
+  loadFeaturedPromptState,
+  loadHistory,
+  loadSettings,
+  saveFeaturedPromptState,
+  saveHistory,
+  saveSettings,
+} from './utils/storage';
+import { getCurrentStreak, getLastCompletedDate } from './utils/streaks';
+
+const toneLabels = {
+  gentle: 'Gentle nudge',
+  playful: 'Playful push',
+  direct: 'Direct reminder',
+};
+
+function formatDateLabel(value) {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(value));
+}
+
+function formatDateTimeLabel(value) {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(new Date(value));
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function stableIndex(seed, length) {
+  let hash = 0;
+
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = (hash * 31 + seed.charCodeAt(index)) % 2147483647;
+  }
+
+  return Math.abs(hash) % length;
+}
+
+function pickPrompt(availablePrompts, seed) {
+  if (availablePrompts.length === 0) {
+    return null;
+  }
+
+  return availablePrompts[stableIndex(seed, availablePrompts.length)];
+}
+
+function App() {
+  const [settings, setSettings] = useState(() => loadSettings());
+  const [history, setHistory] = useState(() => loadHistory());
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [featuredPromptId, setFeaturedPromptId] = useState(null);
+
+  const filteredPrompts = (() => {
+    const categoryMatches =
+      selectedCategory === 'All'
+        ? prompts
+        : prompts.filter((prompt) => prompt.category === selectedCategory);
+
+    if (!settings) {
+      return categoryMatches;
+    }
+
+    const toneMatches = categoryMatches.filter(
+      (prompt) => prompt.tone === settings.reminderStyle,
+    );
+
+    return toneMatches.length > 0 ? toneMatches : categoryMatches;
+  })();
+
+  const featuredPrompt =
+    filteredPrompts.find((prompt) => prompt.id === featuredPromptId) ?? null;
+
+  useEffect(() => {
+    if (!settings) {
+      return;
+    }
+
+    const stored = loadFeaturedPromptState();
+    const currentKey = todayKey();
+    const promptStillVisible = filteredPrompts.some((prompt) => prompt.id === stored?.promptId);
+
+    if (
+      stored &&
+      stored.dateKey === currentKey &&
+      stored.category === selectedCategory &&
+      promptStillVisible
+    ) {
+      setFeaturedPromptId(stored.promptId);
+      return;
+    }
+
+    const nextPrompt = pickPrompt(
+      filteredPrompts,
+      `${currentKey}-${settings.partnerName}-${settings.reminderStyle}-${selectedCategory}`,
+    );
+
+    if (nextPrompt) {
+      setFeaturedPromptId(nextPrompt.id);
+      saveFeaturedPromptState({
+        promptId: nextPrompt.id,
+        dateKey: currentKey,
+        category: selectedCategory,
+      });
+    }
+  }, [filteredPrompts, selectedCategory, settings]);
+
+  function handleSaveSettings(nextSettings) {
+    setSettings(nextSettings);
+    saveSettings(nextSettings);
+  }
+
+  function handleResetSettings() {
+    clearAppStorage();
+    setSettings(null);
+    setHistory([]);
+    setSelectedCategory('All');
+    setFeaturedPromptId(null);
+  }
+
+  function handleRefreshPrompt() {
+    if (filteredPrompts.length === 0) {
+      return;
+    }
+
+    const currentIndex = filteredPrompts.findIndex((prompt) => prompt.id === featuredPromptId);
+    const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % filteredPrompts.length;
+    const nextPrompt = filteredPrompts[nextIndex];
+
+    setFeaturedPromptId(nextPrompt.id);
+    saveFeaturedPromptState({
+      promptId: nextPrompt.id,
+      dateKey: todayKey(),
+      category: selectedCategory,
+    });
+  }
+
+  function handleCompletePrompt() {
+    if (!featuredPrompt || !settings) {
+      return;
+    }
+
+    const completedAt = new Date().toISOString();
+    const nextHistory = [
+      {
+        id: `${featuredPrompt.id}-${completedAt}`,
+        promptId: featuredPrompt.id,
+        category: featuredPrompt.category,
+        text: featuredPrompt.text.replaceAll('{{partner}}', settings.partnerName),
+        completedAt,
+        dateKey: todayKey(),
+      },
+      ...history,
+    ];
+
+    setHistory(nextHistory);
+    saveHistory(nextHistory);
+  }
+
+  if (!settings) {
+    return <Onboarding onSave={handleSaveSettings} />;
+  }
+
+  const totalCompleted = history.length;
+  const currentStreak = getCurrentStreak(history);
+  const lastCompleted = getLastCompletedDate(history);
+  const historyEntries = history.slice(0, 12).map((entry) => ({
+    ...entry,
+    completedLabel: formatDateTimeLabel(entry.completedAt),
+  }));
+
+  return (
+    <div className="app-shell">
+      <header className="topbar">
+        <div>
+          <p className="eyebrow">Daily kindness practice</p>
+          <h1>Be Kind to Your Partner</h1>
+        </div>
+        <p className="topbar-copy">
+          Small, thoughtful gestures for {settings.partnerName}, tracked gently.
+        </p>
+      </header>
+
+      <main className="dashboard">
+        <section className="intro card">
+          <div>
+            <p className="eyebrow">Welcome back</p>
+            <h2>Show up with care, one small act at a time.</h2>
+          </div>
+          <p className="section-copy">
+            Your prompts are tuned to a {settings.reminderStyle} style so the
+            habit feels more natural and sustainable.
+          </p>
+        </section>
+
+        <Stats
+          totalCompleted={totalCompleted}
+          currentStreak={currentStreak}
+          lastCompletedLabel={lastCompleted ? formatDateLabel(lastCompleted) : 'Not yet'}
+        />
+
+        <div className="content-grid">
+          <div className="primary-column">
+            <PromptCard
+              prompt={featuredPrompt}
+              partnerName={settings.partnerName}
+              reminderLabel={toneLabels[settings.reminderStyle]}
+              onComplete={handleCompletePrompt}
+              onRefresh={handleRefreshPrompt}
+              completionCount={totalCompleted}
+            />
+            <CategoryFilter
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onSelect={setSelectedCategory}
+            />
+            <History entries={historyEntries} />
+          </div>
+
+          <div className="secondary-column">
+            <Settings
+              settings={settings}
+              onSave={handleSaveSettings}
+              onReset={handleResetSettings}
+            />
+
+            <section className="card">
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">Prompt library</p>
+                  <h2>{filteredPrompts.length} available prompts</h2>
+                </div>
+              </div>
+
+              {filteredPrompts.length === 0 ? (
+                <div className="empty-state">
+                  <p>No prompts in this view yet.</p>
+                  <span>Choose another category and we will refill the library.</span>
+                </div>
+              ) : (
+                <ul className="library-list">
+                  {filteredPrompts.slice(0, 8).map((prompt) => (
+                    <li key={prompt.id}>
+                      <strong>{prompt.category}</strong>
+                      <p>{prompt.text.replaceAll('{{partner}}', settings.partnerName)}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+export default App;
