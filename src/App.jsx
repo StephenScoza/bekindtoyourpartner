@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import CategoryFilter from './components/CategoryFilter';
+import BrandMark from './components/BrandMark';
 import History from './components/History';
 import Onboarding from './components/Onboarding';
 import PromptCard from './components/PromptCard';
@@ -207,12 +208,14 @@ function App() {
     <div className="app-shell">
       <header className="topbar">
         <div>
-          <p className="eyebrow">Daily kindness practice</p>
-          <h1>Be Kind to Your Partner</h1>
+          <BrandMark compact subtitle={false} />
         </div>
-        <p className="topbar-copy">
-          Small, thoughtful gestures for {settings.partnerName}, tracked gently.
-        </p>
+        <div className="topbar-meta">
+          <p className="eyebrow">Daily kindness practice</p>
+          <p className="topbar-copy">
+            Small, thoughtful gestures for {settings.partnerName}, tracked gently.
+          </p>
+        </div>
       </header>
 
       <main className="dashboard">

@@ -4,7 +4,8 @@ import { spawn } from 'node:child_process';
 import process from 'node:process';
 import { chromium, devices } from 'playwright';
 
-const baseUrl = 'http://127.0.0.1:4318';
+const capturePort = 4327;
+const baseUrl = `http://127.0.0.1:${capturePort}`;
 const screenshotsDir = path.join(process.cwd(), 'docs', 'screenshots');
 
 async function ensureBuild() {
@@ -52,7 +53,7 @@ async function waitForApp() {
 }
 
 function startPreviewServer() {
-  return spawn('npm', ['run', 'preview'], {
+  return spawn('npm', ['run', 'preview', '--', '--host', '127.0.0.1', '--port', `${capturePort}`, '--strictPort'], {
     cwd: process.cwd(),
     shell: true,
     stdio: 'inherit',

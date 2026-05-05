@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import BrandMark from './BrandMark';
 
 const reminderOptions = [
   {
@@ -40,14 +41,20 @@ function Onboarding({ onSave }) {
   return (
     <main className="welcome-shell">
       <section className="hero-panel">
-        <p className="eyebrow">Be Kind to Your Partner</p>
-        <h1>Practice small acts of love that actually stick.</h1>
+        <BrandMark />
+        <h2 className="hero-heading">Practice small acts of love that actually stick.</h2>
         <p className="hero-copy">
           Build a simple daily rhythm of appreciation, support, repair, and
           connection with prompts that feel personal instead of preachy.
         </p>
-        <div className="hero-note">
-          Kindness is rarely one big gesture. It is the steady little things.
+        <div className="hero-essence">
+          <div className="hero-note">Kindness is rarely one big gesture. It is the steady little things.</div>
+          <ul className="essence-list" aria-label="Brand values">
+            <li>Love</li>
+            <li>Connection</li>
+            <li>Growth</li>
+            <li>Trust</li>
+          </ul>
         </div>
       </section>
 
