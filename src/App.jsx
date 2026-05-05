@@ -44,6 +44,10 @@ function todayKey() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function titleCase(value) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 function stableIndex(seed, length) {
   let hash = 0;
 
@@ -181,6 +185,19 @@ function App() {
   const totalCompleted = history.length;
   const currentStreak = getCurrentStreak(history);
   const lastCompleted = getLastCompletedDate(history);
+  const completionTarget = 30;
+  const completionPercent = Math.min(
+    100,
+    Math.round((totalCompleted / completionTarget) * 100),
+  );
+  const recentCategories = [...new Set(history.slice(0, 4).map((entry) => entry.category))];
+  const todayPromptCount = filteredPrompts.length;
+  const momentumMessage =
+    totalCompleted === 0
+      ? 'Your first act of kindness will set the tone.'
+      : currentStreak > 1
+        ? `You have kept this going for ${currentStreak} days in a row.`
+        : 'You are back in motion. One more kind act keeps the rhythm alive.';
   const historyEntries = history.slice(0, 12).map((entry) => ({
     ...entry,
     completedLabel: formatDateTimeLabel(entry.completedAt),
@@ -199,15 +216,43 @@ function App() {
       </header>
 
       <main className="dashboard">
-        <section className="intro card">
-          <div>
-            <p className="eyebrow">Welcome back</p>
-            <h2>Show up with care, one small act at a time.</h2>
+        <section className="intro card stage-card">
+          <div className="intro-copy">
+            <div>
+              <p className="eyebrow">Welcome back</p>
+              <h2>Show up with care, one small act at a time.</h2>
+            </div>
+            <p className="section-copy">
+              Your prompts are tuned to a {settings.reminderStyle} style so the
+              habit feels more natural and sustainable.
+            </p>
           </div>
-          <p className="section-copy">
-            Your prompts are tuned to a {settings.reminderStyle} style so the
-            habit feels more natural and sustainable.
-          </p>
+
+          <div className="intro-grid">
+            <article className="mini-panel">
+              <span className="mini-label">Today&apos;s mode</span>
+              <strong>{titleCase(settings.reminderStyle)}</strong>
+              <p>{todayPromptCount} prompts ready in your current view.</p>
+            </article>
+
+            <article className="mini-panel">
+              <span className="mini-label">Momentum</span>
+              <strong>{completionPercent}%</strong>
+              <p>{momentumMessage}</p>
+            </article>
+
+            <article className="mini-panel">
+              <span className="mini-label">Recent focus</span>
+              <strong>
+                {recentCategories.length > 0 ? recentCategories[0] : 'Ready to begin'}
+              </strong>
+              <p>
+                {recentCategories.length > 0
+                  ? `${recentCategories.length} categories touched recently.`
+                  : 'Your completed acts will shape this space.'}
+              </p>
+            </article>
+          </div>
         </section>
 
         <Stats
@@ -259,11 +304,34 @@ function App() {
                   {filteredPrompts.slice(0, 8).map((prompt) => (
                     <li key={prompt.id}>
                       <strong>{prompt.category}</strong>
+                      <span className="list-tone">{titleCase(prompt.tone)}</span>
                       <p>{prompt.text.replaceAll('{{partner}}', settings.partnerName)}</p>
                     </li>
                   ))}
                 </ul>
               )}
+            </section>
+
+            <section className="card encouragement-card">
+              <p className="eyebrow">Why it works</p>
+              <h2>Consistency beats intensity.</h2>
+              <p className="section-copy">
+                The best relationship habits are small enough to repeat. This
+                app keeps the emotional bar clear, personal, and doable.
+              </p>
+
+              <div className="progress-meter" aria-hidden="true">
+                <div
+                  className="progress-meter-fill"
+                  style={{ width: `${completionPercent}%` }}
+                />
+              </div>
+
+              <p className="support-copy">
+                Portfolio note: this interface uses local state, persistent
+                storage, adaptive filtering, and motion-first CSS polish without
+                relying on a backend.
+              </p>
             </section>
           </div>
         </div>
