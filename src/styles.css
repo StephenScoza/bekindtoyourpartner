@@ -175,7 +175,7 @@ button {
 
 .brand-lockup {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
 }
 
@@ -201,7 +201,8 @@ button {
 
 .brand-wordmark {
   display: grid;
-  gap: 0.15rem;
+  gap: 0.28rem;
+  min-width: 0;
 }
 
 .brand-kicker {
@@ -210,19 +211,27 @@ button {
   letter-spacing: 0.32em;
   font-size: 0.84rem;
   font-weight: 700;
+  line-height: 1.1;
 }
 
 .brand-script {
   margin: 0;
   font-family: 'Pacifico', cursive;
-  font-size: clamp(2rem, 5vw, 4.5rem);
-  line-height: 1;
+  font-size: clamp(1.9rem, 4.4vw, 4.15rem);
+  line-height: 1.08;
   color: var(--navy);
   font-weight: 400;
+  white-space: nowrap;
 }
 
 .brand-lockup-compact .brand-script {
-  font-size: clamp(1.7rem, 2vw, 2.5rem);
+  font-size: clamp(1.45rem, 1.65vw, 2.05rem);
+  line-height: 1.02;
+}
+
+.brand-lockup-compact .brand-kicker {
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
 }
 
 .brand-tagline {
@@ -231,6 +240,7 @@ button {
   font-size: 0.82rem;
   font-weight: 700;
   color: var(--navy);
+  line-height: 1.3;
 }
 
 .brand-tagline-accent {
@@ -795,7 +805,8 @@ button {
   }
 
   .brand-script {
-    font-size: clamp(2rem, 14vw, 3.3rem);
+    font-size: clamp(1.9rem, 13vw, 3rem);
+    white-space: normal;
   }
 
   .hero-heading {

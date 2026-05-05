@@ -1,22 +1,22 @@
 import fs from 'node:fs/promises';
+import net from 'node:net';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import process from 'node:process';
 import { chromium, devices } from 'playwright';
 
-const capturePort = 4327;
-const baseUrl = `http://127.0.0.1:${capturePort}`;
 const screenshotsDir = path.join(process.cwd(), 'docs', 'screenshots');
+const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 async function ensureBuild() {
-  await runCommand('npm', ['run', 'build']);
+  await runCommand(npmCommand, ['run', 'build']);
 }
 
 function runCommand(command, args) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd: process.cwd(),
-      shell: true,
+      shell: false,
       stdio: 'inherit',
     });
 
@@ -36,7 +36,7 @@ async function waitForApp() {
 
   while (Date.now() < deadline) {
     try {
-      const response = await fetch(baseUrl);
+      const response = await fetch(globalThis.__captureBaseUrl);
       const html = await response.text();
 
       if (response.ok && html.includes('Be Kind to Your Partner')) {
@@ -52,15 +52,15 @@ async function waitForApp() {
   throw new Error('Timed out waiting for the local preview server.');
 }
 
-function startPreviewServer() {
-  return spawn('npm', ['run', 'preview', '--', '--host', '127.0.0.1', '--port', `${capturePort}`, '--strictPort'], {
+function startPreviewServer(capturePort) {
+  return spawn(npmCommand, ['run', 'preview', '--', '--host', '127.0.0.1', '--port', `${capturePort}`, '--strictPort'], {
     cwd: process.cwd(),
-    shell: true,
+    shell: false,
     stdio: 'inherit',
   });
 }
 
-async function captureScreenshots() {
+async function captureScreenshots(baseUrl) {
   await fs.mkdir(screenshotsDir, { recursive: true });
 
   const browser = await chromium.launch();
@@ -180,15 +180,43 @@ async function captureScreenshots() {
 
 async function main() {
   await ensureBuild();
+  const capturePort = await findAvailablePort(4327, 4337);
+  const baseUrl = `http://127.0.0.1:${capturePort}`;
+  globalThis.__captureBaseUrl = baseUrl;
 
-  const server = startPreviewServer();
+  const server = startPreviewServer(capturePort);
 
   try {
     await waitForApp();
-    await captureScreenshots();
+    await captureScreenshots(baseUrl);
   } finally {
-    server.kill();
+    server.kill('SIGINT');
   }
+}
+
+function findAvailablePort(start, end) {
+  return new Promise((resolve, reject) => {
+    const tryPort = (port) => {
+      if (port > end) {
+        reject(new Error('No open screenshot capture port found.'));
+        return;
+      }
+
+      const tester = net.createServer();
+
+      tester.once('error', () => {
+        tryPort(port + 1);
+      });
+
+      tester.once('listening', () => {
+        tester.close(() => resolve(port));
+      });
+
+      tester.listen(port, '127.0.0.1');
+    };
+
+    tryPort(start);
+  });
 }
 
 main().catch((error) => {
