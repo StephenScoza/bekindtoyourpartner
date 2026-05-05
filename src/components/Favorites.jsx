@@ -19,6 +19,7 @@ function Favorites({ entries, partnerName, onChoose }) {
             <li key={prompt.id}>
               <strong>{prompt.category}</strong>
               <span className="list-tone">{prompt.tone}</span>
+              {prompt.isCustom ? <span className="custom-badge">Custom</span> : null}
               <p>{prompt.text.replaceAll('{{partner}}', partnerName)}</p>
               <button
                 className="text-button"

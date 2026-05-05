@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import CategoryFilter from './components/CategoryFilter';
 import BrandMark from './components/BrandMark';
+import CustomPromptForm from './components/CustomPromptForm';
 import Favorites from './components/Favorites';
 import History from './components/History';
 import Onboarding from './components/Onboarding';
@@ -11,10 +12,12 @@ import Stats from './components/Stats';
 import { categories, prompts } from './data/prompts';
 import {
   clearAppStorage,
+  loadCustomPrompts,
   loadFavorites,
   loadFeaturedPromptState,
   loadHistory,
   loadSettings,
+  saveCustomPrompts,
   saveFavorites,
   saveFeaturedPromptState,
   saveHistory,
@@ -27,6 +30,7 @@ const toneLabels = {
   playful: 'Playful push',
   direct: 'Direct reminder',
 };
+const toneOptions = ['gentle', 'playful', 'direct'];
 
 function formatDateLabel(value) {
   return new Intl.DateTimeFormat('en-US', {
@@ -75,15 +79,17 @@ function App() {
   const [settings, setSettings] = useState(() => loadSettings());
   const [history, setHistory] = useState(() => loadHistory());
   const [favorites, setFavorites] = useState(() => loadFavorites());
+  const [customPrompts, setCustomPrompts] = useState(() => loadCustomPrompts());
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [featuredPromptId, setFeaturedPromptId] = useState(null);
   const [reflectionDraft, setReflectionDraft] = useState('');
+  const availablePrompts = [...prompts, ...customPrompts];
 
   const filteredPrompts = (() => {
     const categoryMatches =
       selectedCategory === 'All'
-        ? prompts
-        : prompts.filter((prompt) => prompt.category === selectedCategory);
+        ? availablePrompts
+        : availablePrompts.filter((prompt) => prompt.category === selectedCategory);
 
     if (!settings) {
       return categoryMatches;
@@ -211,6 +217,40 @@ function App() {
       dateKey: todayKey(),
       category: selectedCategory,
     });
+  }
+
+  function handleCreateCustomPrompt(promptInput) {
+    const prompt = {
+      id: `custom-${Date.now()}`,
+      ...promptInput,
+      isCustom: true,
+    };
+
+    const nextCustomPrompts = [prompt, ...customPrompts];
+    setCustomPrompts(nextCustomPrompts);
+    saveCustomPrompts(nextCustomPrompts);
+    setFeaturedPromptId(prompt.id);
+    setReflectionDraft('');
+    saveFeaturedPromptState({
+      promptId: prompt.id,
+      dateKey: todayKey(),
+      category: selectedCategory,
+    });
+  }
+
+  function handleDeleteCustomPrompt(promptId) {
+    const nextCustomPrompts = customPrompts.filter((prompt) => prompt.id !== promptId);
+    const nextFavorites = favorites.filter((prompt) => prompt.id !== promptId);
+
+    setCustomPrompts(nextCustomPrompts);
+    setFavorites(nextFavorites);
+    saveCustomPrompts(nextCustomPrompts);
+    saveFavorites(nextFavorites);
+
+    if (featuredPromptId === promptId) {
+      setFeaturedPromptId(null);
+      setReflectionDraft('');
+    }
   }
 
   if (!settings) {
@@ -347,12 +387,23 @@ function App() {
                     <li key={prompt.id}>
                       <strong>{prompt.category}</strong>
                       <span className="list-tone">{titleCase(prompt.tone)}</span>
+                      {prompt.isCustom ? <span className="custom-badge">Custom</span> : null}
                       <p>{prompt.text.replaceAll('{{partner}}', settings.partnerName)}</p>
                     </li>
                   ))}
                 </ul>
               )}
             </section>
+
+            <CustomPromptForm
+              categories={categories}
+              tones={toneOptions}
+              partnerName={settings.partnerName}
+              entries={customPrompts}
+              onCreate={handleCreateCustomPrompt}
+              onUsePrompt={handleChooseFavorite}
+              onDeletePrompt={handleDeleteCustomPrompt}
+            />
 
             <Favorites
               entries={favorites}

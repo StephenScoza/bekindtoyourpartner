@@ -3,6 +3,7 @@ const STORAGE_KEYS = {
   history: 'bktyp-history',
   featuredPrompt: 'bktyp-featured-prompt',
   favorites: 'bktyp-favorites',
+  customPrompts: 'bktyp-custom-prompts',
 };
 
 function readJson(key, fallback) {
@@ -48,6 +49,14 @@ export function loadFavorites() {
 
 export function saveFavorites(favorites) {
   writeJson(STORAGE_KEYS.favorites, favorites);
+}
+
+export function loadCustomPrompts() {
+  return readJson(STORAGE_KEYS.customPrompts, []);
+}
+
+export function saveCustomPrompts(customPrompts) {
+  writeJson(STORAGE_KEYS.customPrompts, customPrompts);
 }
 
 export function clearAppStorage() {

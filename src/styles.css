@@ -522,6 +522,10 @@ button {
   gap: 0.75rem;
 }
 
+.option-grid-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .option-card {
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 20px;
@@ -728,6 +732,31 @@ button {
   font-size: 0.78rem;
 }
 
+.custom-badge {
+  justify-self: start;
+  padding: 0.28rem 0.62rem;
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.08);
+  color: var(--navy);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-top: 0.3rem;
+}
+
+.text-button-muted {
+  color: var(--slate);
+}
+
+.custom-empty-state {
+  margin-top: 1rem;
+}
+
 .settings-summary,
 .empty-state {
   display: grid;
@@ -854,6 +883,10 @@ button {
   .intro-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
+  .option-grid-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 719px) {
@@ -892,5 +925,9 @@ button {
 
   .calendar-day {
     min-height: 4rem;
+  }
+
+  .option-grid-form {
+    grid-template-columns: 1fr;
   }
 }
