@@ -83,6 +83,8 @@ docs/
    npm run dev
    ```
 
+   This app uses a fixed dev port at `http://127.0.0.1:4317`.
+
 3. Create a production build:
 
    ```bash
@@ -94,6 +96,8 @@ docs/
    ```bash
    npm run preview
    ```
+
+   The preview server runs on `http://127.0.0.1:4318`.
 
 5. Regenerate the README screenshots:
 
