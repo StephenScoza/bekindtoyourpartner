@@ -5,6 +5,7 @@ import Favorites from './components/Favorites';
 import History from './components/History';
 import Onboarding from './components/Onboarding';
 import PromptCard from './components/PromptCard';
+import ProgressCalendar from './components/ProgressCalendar';
 import Settings from './components/Settings';
 import Stats from './components/Stats';
 import { categories, prompts } from './data/prompts';
@@ -316,6 +317,7 @@ function App() {
               selectedCategory={selectedCategory}
               onSelect={setSelectedCategory}
             />
+            <ProgressCalendar history={history} />
             <History entries={historyEntries} />
           </div>
 
