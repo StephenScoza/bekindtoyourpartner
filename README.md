@@ -95,6 +95,12 @@ docs/
    npm run preview
    ```
 
+5. Regenerate the README screenshots:
+
+   ```bash
+   npm run screenshots
+   ```
+
 ## Future improvements
 
 - Add calendar-style progress visualization for completed kindness acts
