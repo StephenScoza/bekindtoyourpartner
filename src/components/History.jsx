@@ -20,6 +20,7 @@ function History({ entries }) {
               <div>
                 <strong>{entry.category}</strong>
                 <p>{entry.text}</p>
+                {entry.note ? <span className="history-note">“{entry.note}”</span> : null}
               </div>
               <time dateTime={entry.completedAt}>{entry.completedLabel}</time>
             </li>

@@ -2,6 +2,7 @@ const STORAGE_KEYS = {
   settings: 'bktyp-settings',
   history: 'bktyp-history',
   featuredPrompt: 'bktyp-featured-prompt',
+  favorites: 'bktyp-favorites',
 };
 
 function readJson(key, fallback) {
@@ -39,6 +40,14 @@ export function loadFeaturedPromptState() {
 
 export function saveFeaturedPromptState(state) {
   writeJson(STORAGE_KEYS.featuredPrompt, state);
+}
+
+export function loadFavorites() {
+  return readJson(STORAGE_KEYS.favorites, []);
+}
+
+export function saveFavorites(favorites) {
+  writeJson(STORAGE_KEYS.favorites, favorites);
 }
 
 export function clearAppStorage() {

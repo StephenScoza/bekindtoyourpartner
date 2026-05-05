@@ -5,6 +5,10 @@ function PromptCard({
   onComplete,
   onRefresh,
   completionCount,
+  reflection,
+  onReflectionChange,
+  isFavorite,
+  onToggleFavorite,
 }) {
   if (!prompt) {
     return (
@@ -38,12 +42,26 @@ function PromptCard({
           : 'Start small. Tiny acts done consistently matter more than perfect plans.'}
       </p>
 
+      <label className="field reflection-field">
+        <span>Optional reflection</span>
+        <textarea
+          rows="3"
+          maxLength="180"
+          placeholder={`What made this act meaningful for ${partnerName}?`}
+          value={reflection}
+          onChange={(event) => onReflectionChange(event.target.value)}
+        />
+      </label>
+
       <div className="button-row">
         <button className="primary-button" type="button" onClick={onComplete}>
           I did this ❤️
         </button>
         <button className="secondary-button" type="button" onClick={onRefresh}>
           New prompt
+        </button>
+        <button className="ghost-button" type="button" onClick={onToggleFavorite}>
+          {isFavorite ? 'Favorited' : 'Save favorite'}
         </button>
       </div>
     </section>

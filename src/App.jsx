@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import CategoryFilter from './components/CategoryFilter';
 import BrandMark from './components/BrandMark';
+import Favorites from './components/Favorites';
 import History from './components/History';
 import Onboarding from './components/Onboarding';
 import PromptCard from './components/PromptCard';
@@ -9,9 +10,11 @@ import Stats from './components/Stats';
 import { categories, prompts } from './data/prompts';
 import {
   clearAppStorage,
+  loadFavorites,
   loadFeaturedPromptState,
   loadHistory,
   loadSettings,
+  saveFavorites,
   saveFeaturedPromptState,
   saveHistory,
   saveSettings,
@@ -70,8 +73,10 @@ function pickPrompt(availablePrompts, seed) {
 function App() {
   const [settings, setSettings] = useState(() => loadSettings());
   const [history, setHistory] = useState(() => loadHistory());
+  const [favorites, setFavorites] = useState(() => loadFavorites());
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [featuredPromptId, setFeaturedPromptId] = useState(null);
+  const [reflectionDraft, setReflectionDraft] = useState('');
 
   const filteredPrompts = (() => {
     const categoryMatches =
@@ -150,6 +155,7 @@ function App() {
     const nextPrompt = filteredPrompts[nextIndex];
 
     setFeaturedPromptId(nextPrompt.id);
+    setReflectionDraft('');
     saveFeaturedPromptState({
       promptId: nextPrompt.id,
       dateKey: todayKey(),
@@ -163,12 +169,14 @@ function App() {
     }
 
     const completedAt = new Date().toISOString();
+    const note = reflectionDraft.trim();
     const nextHistory = [
       {
         id: `${featuredPrompt.id}-${completedAt}`,
         promptId: featuredPrompt.id,
         category: featuredPrompt.category,
         text: featuredPrompt.text.replaceAll('{{partner}}', settings.partnerName),
+        note,
         completedAt,
         dateKey: todayKey(),
       },
@@ -176,7 +184,32 @@ function App() {
     ];
 
     setHistory(nextHistory);
+    setReflectionDraft('');
     saveHistory(nextHistory);
+  }
+
+  function handleToggleFavorite() {
+    if (!featuredPrompt) {
+      return;
+    }
+
+    const alreadySaved = favorites.some((entry) => entry.id === featuredPrompt.id);
+    const nextFavorites = alreadySaved
+      ? favorites.filter((entry) => entry.id !== featuredPrompt.id)
+      : [...favorites, featuredPrompt];
+
+    setFavorites(nextFavorites);
+    saveFavorites(nextFavorites);
+  }
+
+  function handleChooseFavorite(promptId) {
+    setFeaturedPromptId(promptId);
+    setReflectionDraft('');
+    saveFeaturedPromptState({
+      promptId,
+      dateKey: todayKey(),
+      category: selectedCategory,
+    });
   }
 
   if (!settings) {
@@ -273,6 +306,10 @@ function App() {
               onComplete={handleCompletePrompt}
               onRefresh={handleRefreshPrompt}
               completionCount={totalCompleted}
+              reflection={reflectionDraft}
+              onReflectionChange={setReflectionDraft}
+              isFavorite={favorites.some((entry) => entry.id === featuredPrompt?.id)}
+              onToggleFavorite={handleToggleFavorite}
             />
             <CategoryFilter
               categories={categories}
@@ -314,6 +351,12 @@ function App() {
                 </ul>
               )}
             </section>
+
+            <Favorites
+              entries={favorites}
+              partnerName={settings.partnerName}
+              onChoose={handleChooseFavorite}
+            />
 
             <section className="card encouragement-card">
               <p className="eyebrow">Why it works</p>
