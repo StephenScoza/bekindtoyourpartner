@@ -1,0 +1,16 @@
+{
+  "name": "Be Kind to Your Partner",
+  "short_name": "Kind Partner",
+  "description": "A warm daily relationship kindness app with personalized prompts, progress tracking, and local-first persistence.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff6f1",
+  "theme_color": "#d66c5f",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

@@ -30,6 +30,7 @@ This project was designed as a portfolio-ready frontend case study with emotiona
 - Prompt library with 60 curated prompts stored in `src/data/prompts.js`
 - Responsive, accessible UI with soft cards, gradients, empty states, and friendly microcopy
 - Motion-aware UI polish with staged card reveals, ambient background movement, and animated progress states
+- Custom favicon, web manifest, and social preview metadata for a more polished shared-link experience
 - `localStorage` persistence for settings, prompt state, and progress history
 
 ## Tech stack
@@ -67,6 +68,10 @@ src/
     streaks.js
 docs/
   screenshots/
+public/
+  favicon.svg
+  og-preview.svg
+  site.webmanifest
 ```
 
 ## Getting started
