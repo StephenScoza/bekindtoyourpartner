@@ -26,7 +26,11 @@ This project was designed as a portfolio-ready frontend case study with emotiona
 - Daily featured kindness prompt customized with the partner name
 - Prompt rotation with category filtering across six relationship-focused areas
 - Progress dashboard with total completed acts, current streak, last completed date, and momentum context
+- Monthly calendar-style progress view for visual habit tracking
 - Completion history log for recent acts of kindness
+- Reflection notes attached to completed kindness acts
+- Favorite prompts for saving the ideas you want to revisit
+- Custom prompt creator so users can add their own relationship rituals and gestures
 - Prompt library with 60 curated prompts stored in `src/data/prompts.js`
 - Responsive, accessible UI with soft cards, gradients, empty states, and friendly microcopy
 - Motion-aware UI polish with staged card reveals, ambient background movement, and animated progress states
@@ -47,6 +51,7 @@ This project was designed as a portfolio-ready frontend case study with emotiona
 - Structured the app into reusable React components with focused utility helpers for persistence and streak calculations
 - Designed a warm UI system with subtle gradients, animation, responsive behavior, and supportive empty states
 - Used browser automation to produce accurate product screenshots for GitHub presentation
+- Prepared the app for static deployment with SPA-friendly hosting config
 
 ## Project structure
 
@@ -72,6 +77,8 @@ public/
   favicon.svg
   og-preview.svg
   site.webmanifest
+vercel.json
+netlify.toml
 ```
 
 ## Getting started
@@ -110,13 +117,34 @@ public/
    npm run screenshots
    ```
 
+## Deployment
+
+This project is ready for static hosting.
+
+### Vercel
+
+1. Import the GitHub repository into Vercel.
+2. Keep the detected Vite settings, or confirm:
+   Build command: `npm run build`
+   Output directory: `dist`
+3. Deploy.
+
+### Netlify
+
+1. Import the GitHub repository into Netlify.
+2. Confirm:
+   Build command: `npm run build`
+   Publish directory: `dist`
+3. Deploy.
+
+Both [vercel.json](./vercel.json) and [netlify.toml](./netlify.toml) include SPA-friendly routing back to `index.html`.
+
 ## Future improvements
 
-- Add calendar-style progress visualization for completed kindness acts
-- Introduce optional daily reflection notes after completing a prompt
+- Add a lightweight export/share view for completed acts and reflections
 - Support exporting history as a shareable or printable summary
-- Add prompt favoriting and custom prompt creation
 - Offer soft in-browser reminder scheduling without requiring a backend
+- Add richer analytics like category trends and favorite prompt usage
 
 ## Resume bullet
 
